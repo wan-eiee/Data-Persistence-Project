@@ -74,4 +74,8 @@ public class MainManager : MonoBehaviour
         m_GameOver = true;
         GameOverText.SetActive(true);
     }
+
+    private void GetBestScore(){
+        GameManager.instance.bestScore = m_Points;
+    }
 }
