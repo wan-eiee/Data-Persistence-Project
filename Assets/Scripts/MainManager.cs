@@ -12,12 +12,20 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text bestScoreText;
+    public GameObject backToMenuButton;
+    public GameObject quitButton;
     public GameObject GameOverText;
+    public GameObject askYourNameText;
+    public GameObject inputField;
+    private TMP_InputField iField;
     
     private bool m_Started = false;
     private int m_Points;
     
-    private bool m_GameOver = false;
+    public bool m_GameOver = false;
+
+    private bool onInput = false;
 
     
     // Start is called before the first frame update
@@ -37,6 +45,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        iField = inputField.GetComponent<TMP_InputField>();
     }
 
     private void Update()
@@ -54,13 +63,14 @@ public class MainManager : MonoBehaviour
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
         }
-        else if (m_GameOver)
+        else if (m_GameOver && !onInput)
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
+        DisplayBestScorePlayer();
     }
 
     void AddPoint(int point)
@@ -72,10 +82,61 @@ public class MainManager : MonoBehaviour
     public void GameOver()
     {
         m_GameOver = true;
-        GameOverText.SetActive(true);
+        
+        if(IsNewRecord()){
+            askYourNameText.SetActive(true);
+            inputField.SetActive(true);
+            GetBestScore();
+            onInput = true;
+        }
+        else {
+            GameOverText.SetActive(true);
+            ActivateMenuButtons();
+        }
+    }
+
+    private bool IsNewRecord(){
+        if(GameManager.instance.score < m_Points){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     private void GetBestScore(){
-        GameManager.instance.bestScore = m_Points;
+        GameManager.instance.score = m_Points;
+    }
+
+
+    //call inputfield end edit
+    public void GetNameFromInputField(){
+        string inputValue = iField.text;
+        GameManager.instance.playerName = inputValue;
+        InitInputField();
+    }
+
+    private void InitInputField(){
+        iField.text = "";
+        inputField.SetActive(false);
+        askYourNameText.SetActive(false);
+        onInput = false;
+        GameOverText.SetActive(true);
+        ActivateMenuButtons();
+    }
+
+    private void ActivateMenuButtons(){
+        backToMenuButton.SetActive(true);
+        quitButton.SetActive(true);
+    }
+
+    private void DisplayBestScorePlayer(){
+        if(GameManager.instance.score == 0){
+            bestScoreText.text = "Best Score: 0";
+            return ; 
+        }
+        else{
+            bestScoreText.text = GameManager.instance.playerName + " has best score: " + GameManager.instance.score;
+        }
     }
 }
